@@ -1,0 +1,8 @@
+{
+  "name": "Library Hub",
+  "description": "Library Management System data layer with Book, Genre, User, and Review models, migration, seed catalog, and interactive schema explorer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

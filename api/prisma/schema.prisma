@@ -1,0 +1,89 @@
+// prisma/schema.prisma
+// Library Management System Data Layer
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// User authorization roles within the library system
+enum Role {
+  PATRON
+  LIBRARIAN
+}
+
+/// User entity representing registered library patrons and staff librarians
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(PATRON)
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+/// Genre classification for organizing catalog items
+model Genre {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  books       Book[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("genres")
+}
+
+/// Book catalog item referencing a parent Genre via foreign key relation
+model Book {
+  id              String   @id @default(cuid())
+  title           String
+  author          String
+  isbn            String   @unique
+  publishedYear   Int?
+  copiesTotal     Int      @default(1)
+  copiesAvailable Int      @default(1)
+  
+  // Foreign key relation to Genre
+  genreId         String
+  genre           Genre    @relation(fields: [genreId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  // Extra relation: Reviews (Stretch task)
+  reviews         Review[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([genreId])
+  @@index([author])
+  @@map("books")
+}
+
+/// Review entity connecting patrons with books (Stretch Task)
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // 1 to 5 stars
+  comment   String?
+  
+  // Relations to Book and User
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookId, userId]) // Enforce one review per user per book
+  @@index([bookId])
+  @@index([userId])
+  @@map("reviews")
+}
